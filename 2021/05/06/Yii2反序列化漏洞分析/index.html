@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Blackw4tch">
+
+
+
+
+
+<title>Yii2反序列化漏洞分析 | Blackw4tch&#39;s blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Blackw4tch&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Blackw4tch&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Yii2反序列化漏洞分析</h1>
+            
+                <div class="post-meta">
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">May 6, 2021&nbsp;&nbsp;21:11:26</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/">漏洞复现</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="Yii2反序列化漏洞分析"><a href="#Yii2反序列化漏洞分析" class="headerlink" title="Yii2反序列化漏洞分析"></a>Yii2反序列化漏洞分析</h1><p>源于红帽杯2021的一道题目–framework</p>
+<h2 id="0x01-环境搭建"><a href="#0x01-环境搭建" class="headerlink" title="0x01 环境搭建"></a>0x01 环境搭建</h2><p>进入题目源代码文件夹，找到./web/index.php，php -S 127.0.0.1:9999 启动Yii服务</p>
+<p>phpstrom启动debug模式</p>
+<h2 id="0x02-构造利用链"><a href="#0x02-构造利用链" class="headerlink" title="0x02 构造利用链"></a>0x02 构造利用链</h2><p>在./controllers/SiteController.php找到反序列化触发点</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">actionAbout</span>(<span class="params"><span class="variable">$message</span> = <span class="string">&#x27;Hello&#x27;</span></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="variable">$data</span> = base64_decode(<span class="variable">$message</span>);</span><br><span class="line">    unserialize(<span class="variable">$data</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从几个魔术方法入手，全局搜索__destruct：</p>
+<p><img src="/Users/blackwatch/Typora/Yii2%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90.assets/image-20210510165417229.png" alt="image-20210510165417229"></p>
+<p>逐个分析，发现可控的函数</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#/vender/yiisoft/yii2/db/BatchQueryResult.php</span></span><br><span class="line"></span><br><span class="line">		<span class="keyword">private</span> <span class="variable">$_dataReader</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// make sure cursor is closed</span></span><br><span class="line">        <span class="keyword">$this</span>-&gt;reset();</span><br><span class="line">    &#125;</span><br><span class="line">     <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">reset</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;_dataReader !== <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">$this</span>-&gt;_dataReader-&gt;close();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_dataReader = <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_batch = <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_value = <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;_key = <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>$this-&gt;_dataReader-&gt;close();</code></p>
+<p>这地方调用close()，$_dataReader类中不含close()，则可调用__call()，全局搜索__call()：</p>
+<p><img src="/Users/blackwatch/Typora/PHP/Yii2%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90.assets/image-20210510170642539.png" alt="image-20210510170642539"></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Generator</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$formatters</span> = <span class="keyword">array</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">format</span>(<span class="params"><span class="variable">$formatter</span>, <span class="variable">$arguments</span> = <span class="keyword">array</span>(<span class="params"></span>)</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> call_user_func_array(<span class="keyword">$this</span>-&gt;getFormatter(<span class="variable">$formatter</span>), <span class="variable">$arguments</span>);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line"> 		<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">getFormatter</span>(<span class="params"><span class="variable">$formatter</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="keyword">$this</span>-&gt;formatters[<span class="variable">$formatter</span>])) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;formatters[<span class="variable">$formatter</span>];</span><br><span class="line">        &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__call</span>(<span class="params"><span class="variable">$method</span>, <span class="variable">$attributes</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">$this</span>-&gt;format(<span class="variable">$method</span>, <span class="variable">$attributes</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以调用call_user_func_array，并且第一个参数<code>$formatters</code>可控，第二个参数我们不能控制从而为空，只能调用一个没有参数的函数。<strong>但是</strong>我们可以调用<strong>内建类中的方法</strong>，继续寻找：</p>
+<blockquote>
+<p>可以全局搜索<code>call_user_func\(\$this-&gt;([a-zA-Z0-9]+), \$this-&gt;([a-zA-Z0-9]+)</code>，得到使用了<code>call_user_func</code>函数，且参数为<strong>类中成员变量</strong>的所有方法</p>
+</blockquote>
+<p><img src="/Users/blackwatch/Typora/PHP/Yii2%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90.assets/image-20210510175231469.png" alt="image-20210510175231469"></p>
+<p>随便选个IndexAction.php</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#IndexAction.php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">IndexAction</span> <span class="keyword">extends</span> <span class="title">Action</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">		<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">run</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">$this</span>-&gt;checkAccess) &#123;</span><br><span class="line">            call_user_func(<span class="keyword">$this</span>-&gt;checkAccess, <span class="keyword">$this</span>-&gt;id);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>调用链为:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">BatchQueryResult:</span><br><span class="line">__destruct()</span><br><span class="line">-&gt;reset()</span><br><span class="line">-&gt;_dataReader = Generator:</span><br><span class="line">-&gt;close()</span><br><span class="line">-&gt;__call()</span><br><span class="line">-&gt;format()</span><br><span class="line">-&gt;call_user_func_array([IndexAction]):</span><br></pre></td></tr></table></figure>
+
+<p>此时可以调用call_user_func()且两个参数均可控</p>
+<h2 id="0x03-绕过disable-functions"><a href="#0x03-绕过disable-functions" class="headerlink" title="0x03 绕过disable_functions"></a>0x03 绕过disable_functions</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wifcontinued,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_get_handler,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriority,pcntl_async_signals,system,exec,shell_exec,popen,proc_open,passthru,symlink,link,syslog,imap_open,ld,dl,mail,putenv,error_log,error_reporting,unset,unlink,return</span><br></pre></td></tr></table></figure>
+
+<p>当时做到这里去看别的题了，没有仔细研究，现在发现还是有很多没有过滤的函数的，比如输出<code>print_r,var_dump</code></p>
+<p>比如执行<code>die,exit,file_get_contents,file_put_contents</code>等</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2021 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/unserialize/"># unserialize</a>
+                    
+                        <a href="/tags/PHP/"># PHP</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2021/03/10/CISCN2019%20web1%20Dropbox%E5%A4%8D%E7%8E%B0/">CISCN2019 web1 Dropbox</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Blackw4tch | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
