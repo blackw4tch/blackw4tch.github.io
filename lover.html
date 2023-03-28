@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Heart Drawing</title>
+    <style>
+      /* 定义背景选择器 */
+      .background {
+        position: fixed; /* 使背景固定不动 */
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+        top: 0;
+        left: 0;
+        background: white; /* 初始背景颜色 */
+        animation-name: backgroundani; /* 设置动画名称 */
+        animation-duration: 2s; /* 设置动画时长 */
+        animation-iteration-count: infinite; /* 无限循环播放 */
+        z-index: 0;
+      }
+
+      /* 定义心形选择器,，通过将正方形旋转45度到一个角朝上，然后生成两个圆形覆盖住半个正方形，使得正方形的下半部三角形和上半部两个半圆形成心形 */
+      .heart {
+        position: absolute; /* 使心形定位在页面上 */
+        margin: auto; /* 自动居中 */
+        height: 400px;
+        width: 400px;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background-color: pink; /* 设置心形颜色 */
+        transform: rotate(-45deg); /* 旋转心形 */
+        animation-name: heartbeat; /* 设置动画名称 */
+        animation-duration: 2s; /* 设置动画时长 */
+        animation-iteration-count: infinite; /* 无限循环播放 */
+        z-index: 2;
+      }
+
+      /* 定义心形动画 */
+      .heart:after {
+        background-color: pink; /* 设置心形颜色 */
+        content: ""; /* 必须有一个内容 */
+        border-radius: 50%; /* 设置圆角为50%使其成为圆形 */
+        position: absolute; /* 绝对定位 */
+        width: 400px;
+        height: 400px;
+        top: 0px;
+        left: 200px;
+      }
+      .heart:before {
+        background-color: pink; /* 设置心形颜色 */
+        content: ""; /* 必须有一个内容 */
+        border-radius: 50%; /* 设置圆角为50%使其成为圆形 */
+        position: absolute; /* 绝对定位 */
+        width: 400px;
+        height: 400px;
+        top: -200px;
+        left: 0px;
+      }
+
+      .love_you {
+        position: absolute;
+        margin: auto; 
+        height: 300px;
+        width: 400px;
+        text-align: center; 
+		line-height: 200px;/*文字水平居中*/
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        font-family: Georgia, "Times New Roman", Times, serif;
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #c5112f;
+        letter-spacing: 0.05rem;
+        user-select: none;
+        text-shadow: 0 0 8px #fff;
+        z-index: 3;
+      }
+
+      .small-heart {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background-color: pink;
+        transform: rotate(-45deg);
+        animation-name: heartbeat;
+        animation-duration: 2s;
+        animation-iteration-count: infinite;
+        z-index: 1;
+      }
+
+      /* 小心动画 */
+      .small-heart:after {
+        background-color: pink;
+        content: "";
+        border-radius: 50%;
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        top: 0px;
+        left: 10px;
+      }
+
+      .small-heart:before {
+        background-color: pink;
+        content: "";
+        border-radius: 50%;
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        top: -10px;
+        left: 0px;
+      }
+
+      /* 定义背景动画 */
+      @keyframes backgroundani {
+        50% {
+          background: #ffe6f2; /* 在动画50%时切换背景颜色 */
+        }
+      }
+
+      /* 定义心形动画 */
+      @keyframes heartbeat {
+        0% {
+          transform: scale(1) rotate(-45deg); /* 初始状态 */
+        }
+        50% {
+          transform: scale(0.6) rotate(-45deg); /* 在动画50%时缩小 */
+        }
+      }
+
+      @keyframes heartbeat-small {
+        0% {
+          transform: scale(1) rotate(-45deg);
+        }
+        50% {
+          transform: scale(0.8) rotate(-45deg);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="background">
+        <div class="love_you">My love only for Lucia</div>
+        <div class="heart"></div>
+    </div>
+    <script>
+      // 添加小心的函数
+      function addHearts() {
+        // 循环添加 10 个小心
+        for (let i = 0; i < 100; i++) {
+          // 创建小心元素
+          const smallHeart = document.createElement("div");
+          smallHeart.classList.add("small-heart");
+
+          // 将小心随机散布在页面中
+          smallHeart.style.top = `${Math.random() * 100}%`;
+          smallHeart.style.left = `${Math.random() * 100}%`;
+
+          // 将小心添加到页面中
+          document.body.appendChild(smallHeart);
+        }
+      }
+
+      // 调用函数，在页面加载时添加小心
+      window.onload = addHearts;
+    </script>
+  </body>
+</html>
