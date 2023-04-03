@@ -13,7 +13,7 @@
         margin: 0;
         top: 0;
         left: 0;
-        background: white; /* 初始背景颜色 */
+        background: rgb(49, 140, 176); /* 初始背景颜色 */
         animation-name: backgroundani; /* 设置动画名称 */
         animation-duration: 2s; /* 设置动画时长 */
         animation-iteration-count: infinite; /* 无限循环播放 */
@@ -30,7 +30,7 @@
         right: 0;
         bottom: 0;
         left: 0;
-        background-color: pink; /* 设置心形颜色 */
+        background-color: rgb(128, 61, 179); /* 设置心形颜色 */
         transform: rotate(-45deg); /* 旋转心形 */
         animation-name: heartbeat; /* 设置动画名称 */
         animation-duration: 2s; /* 设置动画时长 */
@@ -40,7 +40,7 @@
 
       /* 定义心形动画 */
       .heart:after {
-        background-color: pink; /* 设置心形颜色 */
+        background-color: rgb(128, 61, 179); /* 设置心形颜色 */
         content: ""; /* 必须有一个内容 */
         border-radius: 50%; /* 设置圆角为50%使其成为圆形 */
         position: absolute; /* 绝对定位 */
@@ -50,7 +50,7 @@
         left: 200px;
       }
       .heart:before {
-        background-color: pink; /* 设置心形颜色 */
+        background-color: rgb(128, 61, 179); /* 设置心形颜色 */
         content: ""; /* 必须有一个内容 */
         border-radius: 50%; /* 设置圆角为50%使其成为圆形 */
         position: absolute; /* 绝对定位 */
@@ -66,7 +66,7 @@
         height: 300px;
         width: 400px;
         text-align: center; 
-		line-height: 200px;/*文字水平居中*/
+		    line-height: 200px;/*文字水平居中*/
         top: 0;
         bottom: 0;
         left: 0;
@@ -74,10 +74,10 @@
         font-family: Georgia, "Times New Roman", Times, serif;
         font-size: 1.8rem;
         font-weight: bold;
-        color: #c5112f;
+        color: #f3e711;
         letter-spacing: 0.05rem;
         user-select: none;
-        text-shadow: 0 0 8px #fff;
+        text-shadow: 0 0 8px #084138;
         z-index: 3;
       }
 
@@ -85,7 +85,7 @@
         position: absolute;
         width: 20px;
         height: 20px;
-        background-color: pink;
+        background-color: rgb(99, 182, 74);
         transform: rotate(-45deg);
         animation-name: heartbeat;
         animation-duration: 2s;
@@ -95,7 +95,7 @@
 
       /* 小心动画 */
       .small-heart:after {
-        background-color: pink;
+        background-color: rgb(99, 182, 74);
         content: "";
         border-radius: 50%;
         position: absolute;
@@ -106,7 +106,7 @@
       }
 
       .small-heart:before {
-        background-color: pink;
+        background-color: rgb(99, 182, 74);
         content: "";
         border-radius: 50%;
         position: absolute;
@@ -119,7 +119,7 @@
       /* 定义背景动画 */
       @keyframes backgroundani {
         50% {
-          background: #ffe6f2; /* 在动画50%时切换背景颜色 */
+          background: rgb(27, 82, 116); /* 在动画50%时切换背景颜色 */
         }
       }
 
@@ -155,7 +155,7 @@
       // 添加小心的函数
       function addHearts() {
         // 循环添加 10 个小心
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i <100; i++) {
           // 创建小心元素
           const smallHeart = document.createElement("div");
           smallHeart.classList.add("small-heart");
